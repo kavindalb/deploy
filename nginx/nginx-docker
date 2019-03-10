@@ -1,0 +1,15 @@
+FROM nginx
+
+LABEL maintainer="Kavinda Lakmal <kavindalb@gmail.com>"
+
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    nano
+
+ADD deploy/nginx/site/globInventory.conf /etc/nginx/conf.d/
+ADD deploy/nginx/site/default.conf /etc/nginx/conf.d/
+
+WORKDIR /var/www/html
+
+EXPOSE 80
+EXPOSE 443

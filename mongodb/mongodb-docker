@@ -1,0 +1,11 @@
+ARG MONGODB_VERSION=${MONGODB_VERSION}
+
+FROM mongo:${MONGODB_VERSION}
+
+LABEL maintainer="Kavinda Lakmal <kavindalb@gmail.com>"
+
+VOLUME /data/db /data/configdb
+
+CMD ["mongo"]
+
+EXPOSE 27017

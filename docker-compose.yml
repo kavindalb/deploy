@@ -1,0 +1,80 @@
+version: '3'
+
+networks:
+  frontend:
+    driver: ${NETWORKS_DRIVER}
+  backend:
+    driver: ${NETWORKS_DRIVER}
+
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: deploy/workspace/workspace-docker
+    networks:
+      - backend
+    volumes:
+      - ./:/var/www/html
+#    logging:
+#      driver: awslogs
+#      options:
+#        awslogs-region: "us-east-1"
+#        awslogs-group: "laravel"
+#        awslogs-create-group: "true"
+    env_file: .env
+    links:
+        - php-fpm
+        - nginx
+
+
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: deploy/php-fpm/php-fpm-docker
+      args:
+        - PHP_VERSION=${PHP_VERSION}
+    networks:
+        - backend
+    volumes:
+      - ./:/var/www/html
+    # env_file: .env
+
+  nginx:
+    build:
+      context: .
+      dockerfile: deploy/nginx/nginx-docker
+    ports:
+        - "${NGINX_HOST_HTTP_PORT}:80"
+        - "${NGINX_HOST_HTTPS_PORT}:443"
+    networks:
+      - backend
+    links:
+        - php-fpm
+    volumes:
+        - ./:/var/www/html
+
+  mongodb:
+    build:
+      context: .
+      dockerfile: deploy/mongodb/mongodb-docker
+      args:
+        - MONGODB_VERSION=${MONGODB_VERSION}
+    ports:
+      - "${MONGODB_PORT}:27017"
+    networks:
+      - backend
+    env_file: .env
+    volumes:
+        - ${MONGODB_DATA_PATH}/mongodb:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+
+    env_file: .env
+
+  redis:
+    image: redis
+    networks:
+      - backend

@@ -1,0 +1,24 @@
+FROM globinventory_php-fpm
+
+LABEL maintainer="Kavinda Lakmal <kavindalb@gmail.com>"
+
+ADD . /var/www/html
+WORKDIR /var/www/html
+
+RUN chmod -R 777 /var/www/html/storage
+RUN touch storage/logs/laravel.log
+
+RUN composer install
+
+RUN php artisan cache:clear
+RUN php artisan view:clear
+
+
+# RUN touch /var/log/cron.log
+
+# ADD deploy/cron/artisan-schedule-run /etc/cron.d/artisan-schedule-run
+# RUN chmod 0644 /etc/cron.d/artisan-schedule-run
+# RUN chmod +x /etc/cron.d/artisan-schedule-run
+
+
+CMD ["/bin/sh", "-c", "php-fpm -D | tail -f storage/logs/laravel.log"]
